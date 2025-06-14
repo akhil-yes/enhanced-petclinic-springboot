@@ -25,13 +25,10 @@ pipeline {
                 sh 'mvn package'
             }
         }
-        stage('Docker Build') {
+        stage('Check Docker') {
             steps {
-                script {
-                    echo 'Docker Build Started'
-                    docker.build ("$IMAGE_NAME:$IMAGE_TAG")
-                }
-                
+                sh 'docker --version'
+                sh 'docker ps'
             }
         }
        
