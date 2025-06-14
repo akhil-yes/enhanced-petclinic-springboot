@@ -3,6 +3,10 @@ pipeline {
     tools{
         maven 'maven'
     }
+    environment{
+        IMAGE_NAME = "springboot"
+        IMAGE_TAG = "latest"
+    }
     stages {
         stage('Checkout From Git') {
             steps {
@@ -11,21 +15,25 @@ pipeline {
         }
         stage('Maven Compile') {
             steps {
-                echo "This is maven compile stage"
-                sh "mvn compile"
+                echo 'This is Maven Compile Stage'
+                sh 'mvn compile'
             }
         }
-       stage('Maven Test') {
+        stage('Maven Package') {
             steps {
-                echo "This is maven test stage"
-                sh "mvn test"
+                echo 'This is Maven Package Stage'
+                sh 'mvn package'
             }
         }
-         stage('File scanning by Trivy') {
+        stage('Docker Build') {
             steps {
-                echo "Trivy Scanning"
-                sh "trivy fs --format table --output trivy-report.txt --severity HIGH,CRITICAL ."
+                script {
+                    echo 'Docker Build Started'
+                    docker.build ("$IMAGE_NAME:$IMAGE_TAG")
+                }
+                
             }
         }
+       
     }
 }
