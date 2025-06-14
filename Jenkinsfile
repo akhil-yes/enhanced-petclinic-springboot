@@ -33,13 +33,14 @@ pipeline {
         }
         stage('Docker Build') {
             steps {
-                script {
-                    echo 'Docker Build Started'
-                    docker.build ("$IMAGE_NAME:$IMAGE_TAG")
+                script{
+                     echo 'Docker Build Started'
+            sh 'docker build -t springboot:latest .'
                 }
                 
             }
+
         }
-       
-    }
+          
+    } 
 }
