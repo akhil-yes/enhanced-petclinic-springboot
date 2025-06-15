@@ -41,27 +41,32 @@ pipeline {
                 }
             }
         }
-        stage('Azure Login to ACR') {
+        stages {
+        stage('ACR Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
-                    script {
-                        echo 'Azure Login'
-                        sh """
-                            az login --service-principal -u ${ACR_USERNAME} -p ${ACR_PASSWORD} --tenant ${TENANT_ID}
-                            az acr login --name ${ACR_NAME}
-                        """
-                    }
+                    sh '''
+                        echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+                    '''
                 }
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
         stage('Push to ACR') {
             steps {
-                script {
-                    def fullImageName = "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}"
-                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${fullImageName}"
-                    sh "docker push ${fullImageName}"
-                }
+                sh '''
+                    docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
+                '''
             }
         }
     }
+}
 }
