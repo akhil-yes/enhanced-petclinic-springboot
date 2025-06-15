@@ -80,19 +80,20 @@ pipeline {
                 }
             }
         }
-       stage('Jenkins login to kubernetes') {
+       stage('Jenkins login to Kubernetes') {
     steps {
-        script {
-            withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
+        withCredentials([usernamePassword(credentialsId: 'azure-sp-cred', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET')]) {
+            script {
                 echo "Jenkins login to Azure and Kubernetes"
                 sh """
-                    az login --service-principal -u $SERVICE_PRINCIPLE -p $PASSWORD --tenant $TENANT_ID
+                    az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $TENANT_ID
                     az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
                 """
             }
         }
     }
 }
+
 
 stage('Deploy to Kubernetes') {
     steps {
