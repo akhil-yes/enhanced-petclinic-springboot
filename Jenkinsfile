@@ -79,26 +79,29 @@ pipeline {
                 }
             }
         }
-        stage('Jenkins login to kubernetes') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')])
-                script {
-                    echo "Jenkins login to Azure and Kubernetes"
-                    az login --service-principle -u $ACR_USERNAME -p $ACR_PASSWORD --tenant $TENANT_ID
+       stage('Jenkins login to kubernetes') {
+    steps {
+        script {
+            withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
+                echo "Jenkins login to Azure and Kubernetes"
+                sh """
+                    az login --service-principal -u $ACR_USERNAME -p $ACR_PASSWORD --tenant $TENANT_ID
                     az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
-                }
-
-
+                """
             }
         }
-        stage ('Deploy to Kubernetes') {
-            steps {
-                script{
-                    echo 'Deploy to Kubernetes'
-                    sh 'kubectl apply -f k8s/springboot-deployment.yaml'
-                    echo 'Deployment of Kubernetes'
-                }
-            }
+    }
+}
+
+stage('Deploy to Kubernetes') {
+    steps {
+        script {
+            echo 'Deploying to Kubernetes'
+            sh 'kubectl apply -f k8s/springboot-deployment.yaml'
+            echo 'Deployment to Kubernetes completed'
         }
+    }
+}
+
     }
 }
