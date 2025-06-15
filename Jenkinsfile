@@ -9,6 +9,8 @@ pipeline {
         IMAGE_TAG = "latest"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
         FULL_IMAGE_NAME = "akhilcr.azurecr.io/springboot:latest"
+        RESOURCE_GROUP = "RG"
+        CLUSTER_NAME = "myAKSCluster"
     }
     stages {
         stage('Checkout From Git') {
@@ -74,6 +76,27 @@ pipeline {
                             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${FULL_IMAGE_NAME}
                             docker push ${FULL_IMAGE_NAME}
                      '''
+                }
+            }
+        }
+        stage('Jenkins login to kubernetes') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')])
+                script {
+                    echo "Jenkins login to Azure and Kubernetes"
+                    az login --service-principle -u $ACR_USERNAME -p $ACR_PASSWORD --tenant $TENANT_ID
+                    az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
+                }
+
+
+            }
+        }
+        stage ('Deploy to Kubernetes') {
+            steps {
+                script{
+                    echo 'Deploy to Kubernetes'
+                    sh 'kubectl apply -f k8s/springboot-deployment.yaml'
+                    echo 'Deployment of Kubernetes'
                 }
             }
         }
