@@ -4,8 +4,10 @@ pipeline {
         maven 'maven'
     }
     environment{
+        ACR_NAME = "akhilcr"
         IMAGE_NAME = "springboot"
         IMAGE_TAG = "latest"
+        TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
     }
     stages {
         stage('Checkout From Git') {
@@ -32,12 +34,26 @@ pipeline {
             }
         }
         stage('Docker Build') {
-    steps {
-        script {
+                steps {
+                    script {
             echo 'Docker Build Started'
             sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                    } 
+                }
         }
-    }
-}          
+        stage ('Azure Login to ACR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
+                    script {
+                        echo 'Azure Login'
+                        sh '''
+                        az login --service-principal -u $ACR_USERNAME -p $ACR_PASSWORD --tenant $TENANT_ID
+                        az acr login --name $ACR_NAME
+                    '''
+                    }
+                }
+            }
+        }
+
     } 
 }
