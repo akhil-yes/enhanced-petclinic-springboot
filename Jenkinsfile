@@ -41,7 +41,6 @@ pipeline {
                 }
             }
         }
-        stages {
         stage('ACR Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
@@ -51,15 +50,13 @@ pipeline {
                 }
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Build Docker Image for ACR') {
             steps {
                 sh '''
                     docker build -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
         }
-
         stage('Push to ACR') {
             steps {
                 sh '''
@@ -68,7 +65,4 @@ pipeline {
             }
         }
     }
-    }
-
-
 }
