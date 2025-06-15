@@ -5,6 +5,7 @@ pipeline {
     }
     environment {
         ACR_NAME = "akhilcr"
+        SERVICE_PRINCIPLE = "azapp"
         IMAGE_NAME = "springboot"
         IMAGE_TAG = "latest"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
@@ -85,7 +86,7 @@ pipeline {
             withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
                 echo "Jenkins login to Azure and Kubernetes"
                 sh """
-                    az login --service-principal -u $ACR_USERNAME -p $ACR_PASSWORD --tenant $TENANT_ID
+                    az login --service-principal -u $SERVICE_PRINCIPLE -p $PASSWORD --tenant $TENANT_ID
                     az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
                 """
             }
