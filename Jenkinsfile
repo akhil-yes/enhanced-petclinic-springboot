@@ -8,6 +8,7 @@ pipeline {
         IMAGE_NAME = "springboot"
         IMAGE_TAG = "latest"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
+        FULL_IMAGE_NAME = "akhilcr.azurecr.io/springboot:latest"
     }
     stages {
         stage('Checkout From Git') {
