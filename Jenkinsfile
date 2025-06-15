@@ -1,9 +1,9 @@
 pipeline {
     agent any
-    tools{
+    tools {
         maven 'maven'
     }
-    environment{
+    environment {
         ACR_NAME = "akhilcr"
         IMAGE_NAME = "springboot"
         IMAGE_TAG = "latest"
@@ -34,26 +34,34 @@ pipeline {
             }
         }
         stage('Docker Build') {
-                steps {
-                    script {
-            echo 'Docker Build Started'
-            sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
-                    } 
+            steps {
+                script {
+                    echo 'Docker Build Started'
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
+            }
         }
-        stage ('Azure Login to ACR') {
+        stage('Azure Login to ACR') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
                     script {
                         echo 'Azure Login'
-                        sh '''
-                        az login --service-principal -u $ACR_USERNAME -p $ACR_PASSWORD --tenant $TENANT_ID
-                        az acr login --name $ACR_NAME
-                    '''
+                        sh """
+                            az login --service-principal -u ${ACR_USERNAME} -p ${ACR_PASSWORD} --tenant ${TENANT_ID}
+                            az acr login --name ${ACR_NAME}
+                        """
                     }
                 }
             }
         }
-
-    } 
+        stage('Push to ACR') {
+            steps {
+                script {
+                    def fullImageName = "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${fullImageName}"
+                    sh "docker push ${fullImageName}"
+                }
+            }
+        }
+    }
 }
