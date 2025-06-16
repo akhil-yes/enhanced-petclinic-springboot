@@ -76,7 +76,7 @@ pipeline {
         }
          stage('Deploy to AKS') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'acr-sp', passwordVariable: 'AZURE_CLIENT_SECRET', usernameVariable: 'AZURE_CLIENT_ID')]) {
+                withCredentials([usernamePassword(credentialsId: 'azure-sp', passwordVariable: 'AZURE_CLIENT_SECRET', usernameVariable: 'AZURE_CLIENT_ID')]) {
                     sh '''
                         az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant ad3ffba9-49d4-436d-a56a-148ba78fcabb --output none
                         az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
