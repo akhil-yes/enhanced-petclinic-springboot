@@ -77,6 +77,14 @@ pipeline {
                 sh 'az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME'
             }
         }
+         stage('Deploy to AKS') {
+            steps {
+                sh '''
+                kubectl create deployment springboot-app --image=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG || kubectl set image deployment/springboot-app springboot-app=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
+                kubectl expose deployment springboot-app --type=LoadBalancer --port=80 --target-port=8080 || true
+                '''
+            }
+        }
        
 
     }
