@@ -11,7 +11,7 @@ pipeline {
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
         FULL_IMAGE_NAME = "${ACR_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         RESOURCE_GROUP = "RG"
-        CLUSTER_NAME = "myAKSCluster"
+        AKS_CLUSTER_NAME = "myAKSCluster"
     }
     stages {
         stage('Checkout From Git') {
@@ -62,6 +62,13 @@ pipeline {
                             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${FULL_IMAGE_NAME}
                             docker push ${FULL_IMAGE_NAME}
                      '''
+                }
+            }
+        }
+         stage('Azure Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'azure-sp', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET')]) {
+                    sh 'az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant ad3ffba9-49d4-436d-a56a-148ba78fcabb'
                 }
             }
         }
