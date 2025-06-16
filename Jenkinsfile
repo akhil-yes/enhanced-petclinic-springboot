@@ -49,7 +49,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
                     sh '''
-                        echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+                        echo $ACR_PASSWORD | docker login $ACR_NAME -u $ACR_USERNAME --password-stdin
                     '''
                 }
             }
