@@ -7,7 +7,7 @@ pipeline {
         ACR_NAME = "akhilcr.azurecr.io"
         SERVICE_PRINCIPLE = "azapp"
         IMAGE_NAME = "springboot"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_TAG = "13"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
         FULL_IMAGE_NAME = "${ACR_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         RESOURCE_GROUP = "RG"
@@ -74,43 +74,22 @@ pipeline {
                 }
             }
         }
-         stage('AKS Get Credentials') {
-            steps {
-                sh 'az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME'
-            }
-        }
          stage('Deploy to AKS') {
             steps {
-                script {
-                    def imagePath = "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}"
-
+                withCredentials([usernamePassword(credentialsId: 'acr-sp', passwordVariable: 'AZURE_CLIENT_SECRET', usernameVariable: 'AZURE_CLIENT_ID')]) {
                     sh '''
-                        kubectl get deployment springboot-app || kubectl create deployment springboot-app --image=''' + imagePath + ''' || true
-                    '''
+                        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant ad3ffba9-49d4-436d-a56a-148ba78fcabb --output none
+                        az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
 
-                    sh '''
-                        kubectl set image deployment/springboot-app springboot-app=''' + imagePath + ''' || true
+                        if ! kubectl get deployment springboot-app; then
+                          kubectl create deployment springboot-app --image=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
+                        else
+                          kubectl set image deployment/springboot-app $IMAGE_NAME=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG || true
+                        fi
                     '''
                 }
             }
         }
-
-        stage('Check Deployment Status') {
-            steps {
-                sh '''
-                    kubectl rollout status deployment/springboot-app
-                '''
-            }
-        }
-
-        stage('Verify Pods') {
-            steps {
-                sh '''
-                    kubectl get pods -l app=springboot-app
-                '''
-            }
-        }
-       
 
     }
 }
