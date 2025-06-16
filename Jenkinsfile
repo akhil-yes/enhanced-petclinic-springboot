@@ -4,12 +4,12 @@ pipeline {
         maven 'maven'
     }
     environment {
-        ACR_NAME = "akhilcr"
+        ACR_NAME = "akhilcr.azurecr.io"
         SERVICE_PRINCIPLE = "azapp"
         IMAGE_NAME = "springboot"
-        IMAGE_TAG = "latest"
+        IMAGE_TAG = "${BUILD_NUMBER}"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
-        FULL_IMAGE_NAME = "akhilcr.azurecr.io/springboot:latest"
+        FULL_IMAGE_NAME = "${ACR_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         RESOURCE_GROUP = "RG"
         CLUSTER_NAME = "myAKSCluster"
     }
@@ -80,30 +80,7 @@ pipeline {
                 }
             }
         }
-       stage('Jenkins login to Kubernetes') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'azure-sp-cred', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET')]) {
-            script {
-                echo "Jenkins login to Azure and Kubernetes"
-                sh """
-                    az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $TENANT_ID
-                    az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
-                """
-            }
-        }
-    }
-}
-
-
-stage('Deploy to Kubernetes') {
-    steps {
-        script {
-            echo 'Deploying to Kubernetes'
-            sh 'kubectl apply -f k8s/springboot-deployment.yaml'
-            echo 'Deployment to Kubernetes completed'
-        }
-    }
-}
+       
 
     }
 }
