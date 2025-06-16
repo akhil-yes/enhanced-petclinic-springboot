@@ -82,9 +82,9 @@ pipeline {
                         az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME
 
                         if ! kubectl get deployment springboot-app; then
-                          kubectl create deployment springboot-app --image=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
+                          kubectl create deployment springboot-app --image=$FULL_IMAGE_NAME
                         else
-                          kubectl set image deployment/springboot-app $IMAGE_NAME=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG || true
+                          kubectl set image deployment/springboot-app springboot=$FULL_IMAGE_NAME || true
                         fi
                     '''
                 }
