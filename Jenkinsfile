@@ -4,7 +4,7 @@ pipeline {
         maven 'maven'
     }
     environment {
-        ACR_NAME = "akhilcr.azurecr.io"
+        ACR_NAME = "akhilcr"
         SERVICE_PRINCIPLE = "azapp"
         IMAGE_NAME = "springboot"
         IMAGE_TAG = "${BUILD_NUMBER}"
