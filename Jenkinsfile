@@ -79,25 +79,35 @@ pipeline {
                 sh 'az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME'
             }
         }
-         stage('AKS Deploy or Update') {
+         stage('Deploy to AKS') {
             steps {
                 script {
-                    def deploymentExists = sh(script: "kubectl get deployment springboot-app --ignore-not-found", returnStatus: true) == 0
+                    def imagePath = "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}"
 
-                    if (deploymentExists) {
-                        sh 'kubectl set image deployment/springboot-app springboot-app=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG'
-                    } else {
-                        sh 'kubectl create deployment springboot-app --image=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG'
-                        sh 'kubectl expose deployment springboot-app --type=LoadBalancer --port=8080'
-                    }
+                    sh '''
+                        kubectl get deployment springboot-app || kubectl create deployment springboot-app --image=''' + imagePath + ''' || true
+                    '''
+
+                    sh '''
+                        kubectl set image deployment/springboot-app springboot-app=''' + imagePath + ''' || true
+                    '''
                 }
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Check Deployment Status') {
             steps {
-                sh 'kubectl rollout status deployment/springboot-app'
-                sh 'kubectl get svc springboot-app'
+                sh '''
+                    kubectl rollout status deployment/springboot-app
+                '''
+            }
+        }
+
+        stage('Verify Pods') {
+            steps {
+                sh '''
+                    kubectl get pods -l app=springboot-app
+                '''
             }
         }
        
