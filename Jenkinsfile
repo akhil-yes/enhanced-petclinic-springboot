@@ -7,7 +7,7 @@ pipeline {
         ACR_NAME = "akhilcr.azurecr.io"
         SERVICE_PRINCIPLE = "azapp"
         IMAGE_NAME = "springboot"
-        IMAGE_TAG = "13"
+        IMAGE_TAG = "16"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
         FULL_IMAGE_NAME = "${ACR_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         RESOURCE_GROUP = "RG"
@@ -79,7 +79,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'azure-sp', passwordVariable: 'AZURE_CLIENT_SECRET', usernameVariable: 'AZURE_CLIENT_ID')]) {
                     sh '''
                         az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant ad3ffba9-49d4-436d-a56a-148ba78fcabb --output none
-                        az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
+                        az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME
 
                         if ! kubectl get deployment springboot-app; then
                           kubectl create deployment springboot-app --image=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
