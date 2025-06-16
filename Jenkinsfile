@@ -7,7 +7,7 @@ pipeline {
         ACR_NAME = "akhilcr.azurecr.io"
         SERVICE_PRINCIPLE = "azapp"
         IMAGE_NAME = "springboot"
-        IMAGE_TAG = "16"
+        IMAGE_TAG = "${BUILD_NUMBER}"
         TENANT_ID = "ad3ffba9-49d4-436d-a56a-148ba78fcabb"
         FULL_IMAGE_NAME = "${ACR_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         RESOURCE_GROUP = "RG"
